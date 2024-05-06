@@ -25,7 +25,7 @@ const SensorGraphs = () => {
     useEffect(() => {
         const intervalId = setInterval(() => {
             const timestamp = new Date();
-            fetch('https://estacionbackend-5d3596a4576a.herokuapp.com/api/sensor-data')
+            fetch('https://estacionbackend.herokuapp.com')
                 .then(response => response.json())
                 .then(data => {
                     setChartData(prevData => ({
