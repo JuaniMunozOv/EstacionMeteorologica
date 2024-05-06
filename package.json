@@ -38,6 +38,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "gh-pages": "^6.1.1",
     "web-vitals": "^3.5.2"
   }
 }
