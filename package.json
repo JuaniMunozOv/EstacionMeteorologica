@@ -20,7 +20,7 @@
     "eject": "react-scripts eject",
     "deploy": "gh-pages -d build"
   },
-  "homepage": "https://juanimunozov.github.io/FrontendEstacion",
+  "homepage": "https://juanimunozov.github.io/EstacionMeteorologica",
   "browserslist": {
     "production": [
       ">0.2%",
