@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import './SensorDisplay.css';  // Asumiendo que tienes un CSS específico para este componente
+import './SensorDisplay.css';
 
 const SensorDisplay = () => {
     const [sensorData, setSensorData] = useState({
@@ -14,7 +14,8 @@ const SensorDisplay = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('http://localhost:3000/api/sensor-data');
+                // Cambiar la URL a la del backend en Heroku
+                const response = await axios.get('https://estacionbackend-5d3596a4576a.herokuapp.com/api/sensor-data');
                 setSensorData(response.data);
             } catch (error) {
                 console.error('Error al obtener los datos de los sensores:', error);
