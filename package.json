@@ -20,7 +20,7 @@
     "eject": "react-scripts eject",
     "deploy": "gh-pages -d build"
   },
-  "homepage": "https://juanimunozov.github.io/my-sensor-app/frontend",
+  "homepage": "https://juanimunozov.github.io/FrontendEstacion",
   "browserslist": {
     "production": [
       ">0.2%",
