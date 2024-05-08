@@ -1,7 +1,7 @@
 import React from 'react';
 import './App.css';
 import SensorDisplay from './SensorDisplay';
-import SensorGraphs from './SensorGraphs'; // Asegúrate de importar SensorGraphs
+import SensorGraphs from './SensorGraphs'; 
 import background from './assets/background.svg';
 
 function App() {

@@ -15,7 +15,8 @@ const SensorDisplay = () => {
         const fetchData = async () => {
             try {
                 // Cambiar la URL a la del backend en Heroku
-                const response = await axios.get('https://estacionbackend.herokuapp.com');
+                const response = await axios.get('https://estacionbackend.herokuapp.com/api/sensor-data');
+
                 setSensorData(response.data);
             } catch (error) {
                 console.error('Error al obtener los datos de los sensores:', error);
