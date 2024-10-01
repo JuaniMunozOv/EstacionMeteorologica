@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
 import './SensorGraphs.css';
+
+const firebaseConfig = {
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID,
+    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
+};
+
+// Inicializa Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // Registrando componentes necesarios de Chart.js
 ChartJS.register(
@@ -22,24 +39,38 @@ const SensorGraphs = () => {
         humedadSuelo: []
     });
 
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-            const timestamp = new Date();
-            fetch('https://estacionbackend.herokuapp.com/api/sensor-data')
-                .then(response => response.json())
-                .then(data => {
-                    setChartData(prevData => ({
-                        timestamps: [...prevData.timestamps, timestamp.toLocaleTimeString()],
-                        temperatura1: [...prevData.temperatura1, data.temperatura1],
-                        temperatura2: [...prevData.temperatura2, data.temperatura2],
-                        humedadSuelo: [...prevData.humedadSuelo, data.humedadSuelo]
-                    }));
-                })
-                .catch(error => {
-                    console.error("Error fetching data: ", error);
-                });
-        }, 1800000);  // Actualiza cada 30 minutos
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                const docRef = doc(db, "sensores", "historico");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    setChartData({
+                        timestamps: data.timestamps || [],
+                        temperatura1: data.temperatura1 || [],
+                        temperatura2: data.temperatura2 || [],
+                        humedadSuelo: data.humedadSuelo || []
+                    });
+                } else {
+                    console.log("No hay datos históricos disponibles.");
+                }
+                setLoading(false);
+            } catch (error) {
+                console.error("Error obteniendo los datos históricos:", error);
+                setError("Error al obtener los datos históricos.");
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+
+        const intervalId = setInterval(fetchData, 1800000); // Actualizar cada 30 minutos
         return () => clearInterval(intervalId);
     }, []);
 
@@ -74,6 +105,14 @@ const SensorGraphs = () => {
             }
         ]
     });
+
+    if (loading) {
+        return <div>Cargando gráficos de sensores...</div>;
+    }
+
+    if (error) {
+        return <div>{error}</div>;
+    }
 
     return (
         <div className="sensor-graphs-container">
