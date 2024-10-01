@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { getDatabase, ref, onValue } from 'firebase/database';  // Cambiamos Firestore por Realtime Database
 import { initializeApp } from 'firebase/app';
 import './SensorGraphs.css';
 
+// Configuración de Firebase
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
     authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -18,7 +19,7 @@ const firebaseConfig = {
 
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getDatabase(app);  // Inicializa la Realtime Database
 
 // Registrando componentes necesarios de Chart.js
 ChartJS.register(
@@ -43,35 +44,48 @@ const SensorGraphs = () => {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                const docRef = doc(db, "sensores", "historico");
-                const docSnap = await getDoc(docRef);
+        // Referencia a los datos de sensores en Realtime Database
+        const sensorRef = ref(db, 'sensores');  // Cambiar la ruta si es necesario
 
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    setChartData({
-                        timestamps: data.timestamps || [],
-                        temperatura1: data.temperatura1 || [],
-                        temperatura2: data.temperatura2 || [],
-                        humedadSuelo: data.humedadSuelo || []
-                    });
-                } else {
-                    console.log("No hay datos históricos disponibles.");
-                }
+        // Obtener datos de Realtime Database en tiempo real
+        const unsubscribe = onValue(sensorRef, (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const timestamps = [];
+                const temp1Data = [];
+                const temp2Data = [];
+                const humedadSueloData = [];
+
+                // Iterar sobre cada nodo para obtener los datos históricos
+                Object.keys(data).forEach((key) => {
+                    const record = data[key];
+                    timestamps.push(key);  // Usamos el key (millis) como timestamp
+                    temp1Data.push(parseFloat(record.temperatura1));  // Asegurarse de convertir los datos a número
+                    temp2Data.push(parseFloat(record.temperatura2));
+                    humedadSueloData.push(parseFloat(record.humedadSuelo));
+                });
+
+                // Actualizar los datos del gráfico
+                setChartData({
+                    timestamps: timestamps,
+                    temperatura1: temp1Data,
+                    temperatura2: temp2Data,
+                    humedadSuelo: humedadSueloData
+                });
                 setLoading(false);
-            } catch (error) {
-                console.error("Error obteniendo los datos históricos:", error);
-                setError("Error al obtener los datos históricos.");
+            } else {
+                console.log("No hay datos históricos disponibles.");
+                setError("No se encontraron datos de sensores.");
                 setLoading(false);
             }
-        };
+        }, (errorObject) => {
+            console.error("Error obteniendo los datos históricos:", errorObject);
+            setError("Error al obtener los datos históricos.");
+            setLoading(false);
+        });
 
-        fetchData();
-
-        const intervalId = setInterval(fetchData, 1800000); // Actualizar cada 30 minutos
-        return () => clearInterval(intervalId);
+        // Limpiar la suscripción cuando el componente se desmonta
+        return () => unsubscribe();
     }, []);
 
     const createChartOptions = (yAxisTitle) => ({
