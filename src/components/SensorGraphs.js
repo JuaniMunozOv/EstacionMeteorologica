@@ -34,7 +34,7 @@ ChartJS.register(
 
 const SensorGraphs = () => {
     const [chartData, setChartData] = useState({
-        timestamps: [],
+        timestamps: [],  // Aquí almacenaremos la hora local del navegador
         temperatura1: [],
         temperatura2: [],
         humedadSuelo: []
@@ -56,18 +56,23 @@ const SensorGraphs = () => {
                 const temp2Data = [];
                 const humedadSueloData = [];
 
-                // Iterar sobre cada nodo para obtener los datos históricos
+                // Iterar sobre cada nodo para obtener los datos
                 Object.keys(data).forEach((key) => {
                     const record = data[key];
-                    timestamps.push(key);  // Usamos el key (millis) como timestamp
-                    temp1Data.push(parseFloat(record.temperatura1));  // Asegurarse de convertir los datos a número
+
+                    // Capturamos la hora local del navegador cuando llegan los datos
+                    const now = new Date();  // Hora local del navegador
+                    const formattedDate = `${("0" + now.getDate()).slice(-2)}/${("0" + (now.getMonth() + 1)).slice(-2)} ${("0" + now.getHours()).slice(-2)}:${("0" + now.getMinutes()).slice(-2)}`; 
+                    
+                    timestamps.push(formattedDate);  // Usar la hora local como timestamp
+                    temp1Data.push(parseFloat(record.temperatura1));  // Convertir a número
                     temp2Data.push(parseFloat(record.temperatura2));
                     humedadSueloData.push(parseFloat(record.humedadSuelo));
                 });
 
                 // Actualizar los datos del gráfico
                 setChartData({
-                    timestamps: timestamps,
+                    timestamps: timestamps,  // Ahora contiene las horas locales formateadas
                     temperatura1: temp1Data,
                     temperatura2: temp2Data,
                     humedadSuelo: humedadSueloData
@@ -96,23 +101,13 @@ const SensorGraphs = () => {
                 title: {
                     display: true,
                     text: yAxisTitle
-                },
-                x: {
-                type: 'time',
-                time: {
-                    unit: 'minute',
-                    tooltipFormat: 'DD/MM/YYYY HH:mm',
-                    displayFormats: {
-                        minute: 'HH:mm',
-                        hour: 'HH:mm',
-                        day: 'DD/MM/YYYY'
-                    }
-                },
+                }
+            },
+            x: {
                 title: {
                     display: true,
-                    text: 'Fecha y Hora'
+                    text: 'Fecha y Hora'  // Etiqueta del eje X
                 }
-            }
             }
         },
         plugins: {
@@ -125,7 +120,7 @@ const SensorGraphs = () => {
     });
 
     const createChartData = (label, data, borderColor) => ({
-        labels: chartData.timestamps,
+        labels: chartData.timestamps,  // Etiquetas del eje X, que ahora son horas locales
         datasets: [
             {
                 label: label,
