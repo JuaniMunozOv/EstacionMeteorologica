@@ -65,8 +65,8 @@ const SensorDisplay = () => {
 
     return (
         <div className="sensor-grid">
-            <div className="sensor-box">Termómetro Interior: {sensorData.temperatura1 ?? 'N/A'} °C</div>
-            <div className="sensor-box">Termómetro Exterior: {sensorData.temperatura2 ?? 'N/A'} °C</div>
+            <div className="sensor-box">Termómetro Exterior: {sensorData.temperatura1 ?? 'N/A'} °C</div>
+            <div className="sensor-box">Termómetro Interior: {sensorData.temperatura2 ?? 'N/A'} °C</div>
             <div className="sensor-box">Humedad: {sensorData.humedad ?? 'N/A'} %</div>
             <div className="sensor-box">Humedad de Suelo: {sensorData.humedadSuelo ?? 'N/A'} %</div>
         </div>
