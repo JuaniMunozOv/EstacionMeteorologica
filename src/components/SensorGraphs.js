@@ -96,7 +96,23 @@ const SensorGraphs = () => {
                 title: {
                     display: true,
                     text: yAxisTitle
+                },
+                x: {
+                type: 'time',
+                time: {
+                    unit: 'minute',
+                    tooltipFormat: 'DD/MM/YYYY HH:mm',
+                    displayFormats: {
+                        minute: 'HH:mm',
+                        hour: 'HH:mm',
+                        day: 'DD/MM/YYYY'
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Fecha y Hora'
                 }
+            }
             }
         },
         plugins: {
