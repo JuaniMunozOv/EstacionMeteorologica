@@ -34,7 +34,7 @@ ChartJS.register(
 
 const SensorGraphs = () => {
     const [chartData, setChartData] = useState({
-        timestamps: [],  // Aquí almacenaremos la hora local del navegador
+        timestamps: [],
         temperatura1: [],
         temperatura2: [],
         humedadSuelo: []
@@ -56,26 +56,28 @@ const SensorGraphs = () => {
                 const temp2Data = [];
                 const humedadSueloData = [];
 
-                // Iterar sobre cada nodo para obtener los datos
+                // Iterar sobre cada nodo para obtener los datos históricos
                 Object.keys(data).forEach((key) => {
                     const record = data[key];
-
-                    // Capturamos la hora local del navegador cuando llegan los datos
-                    const now = new Date();  // Hora local del navegador
-                    const formattedDate = `${("0" + now.getDate()).slice(-2)}/${("0" + (now.getMonth() + 1)).slice(-2)} ${("0" + now.getHours()).slice(-2)}:${("0" + now.getMinutes()).slice(-2)}`; 
-                    
-                    timestamps.push(formattedDate);  // Usar la hora local como timestamp
-                    temp1Data.push(parseFloat(record.temperatura1));  // Convertir a número
+                    timestamps.push(key);  // Usamos el key (millis) como timestamp
+                    temp1Data.push(parseFloat(record.temperatura1));  // Asegurarse de convertir los datos a número
                     temp2Data.push(parseFloat(record.temperatura2));
                     humedadSueloData.push(parseFloat(record.humedadSuelo));
                 });
 
+                // Limitar a los últimos 20 datos
+                const limit = 20;
+                const limitedTimestamps = timestamps.slice(-limit);
+                const limitedTemp1Data = temp1Data.slice(-limit);
+                const limitedTemp2Data = temp2Data.slice(-limit);
+                const limitedHumedadSueloData = humedadSueloData.slice(-limit);
+
                 // Actualizar los datos del gráfico
                 setChartData({
-                    timestamps: timestamps,  // Ahora contiene las horas locales formateadas
-                    temperatura1: temp1Data,
-                    temperatura2: temp2Data,
-                    humedadSuelo: humedadSueloData
+                    timestamps: limitedTimestamps,
+                    temperatura1: limitedTemp1Data,
+                    temperatura2: limitedTemp2Data,
+                    humedadSuelo: limitedHumedadSueloData
                 });
                 setLoading(false);
             } else {
@@ -102,12 +104,6 @@ const SensorGraphs = () => {
                     display: true,
                     text: yAxisTitle
                 }
-            },
-            x: {
-                title: {
-                    display: true,
-                    text: 'Fecha y Hora'  // Etiqueta del eje X
-                }
             }
         },
         plugins: {
@@ -120,7 +116,7 @@ const SensorGraphs = () => {
     });
 
     const createChartData = (label, data, borderColor) => ({
-        labels: chartData.timestamps,  // Etiquetas del eje X, que ahora son horas locales
+        labels: chartData.timestamps,
         datasets: [
             {
                 label: label,
@@ -142,10 +138,10 @@ const SensorGraphs = () => {
     return (
         <div className="sensor-graphs-container">
             <div className="graph-box">
-                <Line data={createChartData('Temperatura Exterior', chartData.temperatura1, 'rgb(75, 192, 192)')} options={createChartOptions('Temperatura (°C)')} />
+                <Line data={createChartData('Temperatura Interior', chartData.temperatura1, 'rgb(75, 192, 192)')} options={createChartOptions('Temperatura (°C)')} />
             </div>
             <div className="graph-box">
-                <Line data={createChartData('Temperatura Interior', chartData.temperatura2, 'rgb(255, 99, 132)')} options={createChartOptions('Temperatura (°C)')} />
+                <Line data={createChartData('Temperatura Exterior', chartData.temperatura2, 'rgb(255, 99, 132)')} options={createChartOptions('Temperatura (°C)')} />
             </div>
             <div className="graph-box">
                 <Line data={createChartData('Humedad del Suelo', chartData.humedadSuelo, 'rgb(54, 162, 235)')} options={createChartOptions('Humedad del Suelo (%)')} />
