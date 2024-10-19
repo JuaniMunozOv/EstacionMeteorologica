@@ -138,10 +138,10 @@ const SensorGraphs = () => {
     return (
         <div className="sensor-graphs-container">
             <div className="graph-box">
-                <Line data={createChartData('Temperatura Interior', chartData.temperatura1, 'rgb(75, 192, 192)')} options={createChartOptions('Temperatura (°C)')} />
+                <Line data={createChartData('Temperatura Exterior', chartData.temperatura1, 'rgb(75, 192, 192)')} options={createChartOptions('Temperatura (°C)')} />
             </div>
             <div className="graph-box">
-                <Line data={createChartData('Temperatura Exterior', chartData.temperatura2, 'rgb(255, 99, 132)')} options={createChartOptions('Temperatura (°C)')} />
+                <Line data={createChartData('Temperatura Interior', chartData.temperatura2, 'rgb(255, 99, 132)')} options={createChartOptions('Temperatura (°C)')} />
             </div>
             <div className="graph-box">
                 <Line data={createChartData('Humedad del Suelo', chartData.humedadSuelo, 'rgb(54, 162, 235)')} options={createChartOptions('Humedad del Suelo (%)')} />
