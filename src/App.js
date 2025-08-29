@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
-// Ajustamos la ruta para que coincida con tu estructura de carpetas
 import { database } from './firebase/firebaseConfig';
 import './App.css';
 import SensorDisplay from './components/SensorDisplay';
@@ -8,18 +7,31 @@ import SensorGraphs from './components/SensorGraphs';
 import background from './assets/background.svg';
 
 function App() {
-  const [sensorData, setSensorData] = useState(null);
+  // Estado para los datos actuales (temperatura, humedad, etc.)
+  const [currentData, setCurrentData] = useState(null);
+  // Estado para los datos históricos (para los gráficos)
+  const [historicalData, setHistoricalData] = useState(null);
 
   useEffect(() => {
-    const sensorDataRef = ref(database, 'datos_actuales');
-    
-    const unsubscribe = onValue(sensorDataRef, (snapshot) => {
-      const data = snapshot.val();
-      console.log("Datos recibidos de Realtime Database:", data);
-      setSensorData(data);
+    // 1. Escuchar los datos actuales
+    const currentDataRef = ref(database, 'datos_actuales');
+    const unsubscribeCurrent = onValue(currentDataRef, (snapshot) => {
+      setCurrentData(snapshot.val());
     });
-    
-    return () => unsubscribe();
+
+    // 2. Escuchar los datos históricos (si los tienes en otra ruta)
+    //    Si no tienes datos históricos, puedes comentar o eliminar esta parte.
+    //    Asumiré que tienes una ruta 'datos_historicos' para el ejemplo.
+    const historicalDataRef = ref(database, 'datos_historicos');
+    const unsubscribeHistorical = onValue(historicalDataRef, (snapshot) => {
+      setHistoricalData(snapshot.val());
+    });
+
+    // Limpiar las suscripciones al desmontar el componente
+    return () => {
+      unsubscribeCurrent();
+      unsubscribeHistorical();
+    };
   }, []);
 
   const backgroundStyle = {
@@ -34,8 +46,9 @@ function App() {
   return (
     <div className="App">
       <header className="App-header" style={backgroundStyle}>
-        <SensorDisplay data={sensorData} />
-        <SensorGraphs data={sensorData} />
+        {/* Pasamos los datos a los componentes hijos como props */}
+        <SensorDisplay data={currentData} />
+        <SensorGraphs data={historicalData} />
       </header>
     </div>
   );

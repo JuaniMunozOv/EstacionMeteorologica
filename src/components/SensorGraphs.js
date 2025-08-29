@@ -1,150 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
-import { getDatabase, ref, onValue } from 'firebase/database';  // Cambiamos Firestore por Realtime Database
-import { initializeApp } from 'firebase/app';
 import './SensorGraphs.css';
 
-// Configuración de Firebase
-const firebaseConfig = {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-    authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-    databaseURL: process.env.REACT_APP_FIREBASE_DATABASE_URL,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-    storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID,
-    measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
-};
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-// Inicializa Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);  // Inicializa la Realtime Database
+const SensorGraphs = ({ data }) => {
+    if (!data) {
+        return <div>Cargando gráficos...</div>;
+    }
 
-// Registrando componentes necesarios de Chart.js
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend
-);
+    // Procesar los datos históricos que llegan desde App.js
+    const labels = Object.values(data).map(record => new Date(record.timestamp).toLocaleTimeString());
+    const tempData = Object.values(data).map(record => record.temperatura);
+    const humedadData = Object.values(data).map(record => record.humedadAire);
 
-const SensorGraphs = () => {
-    const [chartData, setChartData] = useState({
-        timestamps: [],
-        temperatura1: [],
-        temperatura2: [],
-        humedadSuelo: []
-    });
-
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        // Referencia a los datos de sensores en Realtime Database
-        const sensorRef = ref(db, 'sensores');  // Cambiar la ruta si es necesario
-
-        // Obtener datos de Realtime Database en tiempo real
-        const unsubscribe = onValue(sensorRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const timestamps = [];
-                const temp1Data = [];
-                const temp2Data = [];
-                const humedadSueloData = [];
-
-                // Iterar sobre cada nodo para obtener los datos históricos
-                Object.keys(data).forEach((key) => {
-                    const record = data[key];
-                    timestamps.push(key);  // Usamos el key (millis) como timestamp
-                    temp1Data.push(parseFloat(record.temperatura1));  // Asegurarse de convertir los datos a número
-                    temp2Data.push(parseFloat(record.temperatura2));
-                    humedadSueloData.push(parseFloat(record.humedadSuelo));
-                });
-
-                // Limitar a los últimos 20 datos
-                const limit = 20;
-                const limitedTimestamps = timestamps.slice(-limit);
-                const limitedTemp1Data = temp1Data.slice(-limit);
-                const limitedTemp2Data = temp2Data.slice(-limit);
-                const limitedHumedadSueloData = humedadSueloData.slice(-limit);
-
-                // Actualizar los datos del gráfico
-                setChartData({
-                    timestamps: limitedTimestamps,
-                    temperatura1: limitedTemp1Data,
-                    temperatura2: limitedTemp2Data,
-                    humedadSuelo: limitedHumedadSueloData
-                });
-                setLoading(false);
-            } else {
-                console.log("No hay datos históricos disponibles.");
-                setError("No se encontraron datos de sensores.");
-                setLoading(false);
-            }
-        }, (errorObject) => {
-            console.error("Error obteniendo los datos históricos:", errorObject);
-            setError("Error al obtener los datos históricos.");
-            setLoading(false);
-        });
-
-        // Limpiar la suscripción cuando el componente se desmonta
-        return () => unsubscribe();
-    }, []);
-
-    const createChartOptions = (yAxisTitle) => ({
-        scales: {
-            y: {
-                min: yAxisTitle === 'Temperatura (°C)' ? -10 : 0,
-                max: yAxisTitle === 'Temperatura (°C)' ? 50 : 100,
-                title: {
-                    display: true,
-                    text: yAxisTitle
-                }
-            }
-        },
-        plugins: {
-            tooltip: {
-                mode: 'index',
-                intersect: false
-            }
-        },
-        maintainAspectRatio: false
-    });
-
-    const createChartData = (label, data, borderColor) => ({
-        labels: chartData.timestamps,
+    const chartData = {
+        labels,
         datasets: [
             {
-                label: label,
-                data: data,
-                borderColor: borderColor,
-                tension: 0.1
-            }
-        ]
-    });
-
-    if (loading) {
-        return <div>Cargando gráficos de sensores...</div>;
-    }
-
-    if (error) {
-        return <div>{error}</div>;
-    }
+                label: 'Temperatura',
+                data: tempData,
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            },
+            {
+                label: 'Humedad Aire',
+                data: humedadData,
+                borderColor: 'rgb(54, 162, 235)',
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            },
+        ],
+    };
 
     return (
         <div className="sensor-graphs-container">
             <div className="graph-box">
-                <Line data={createChartData('Temperatura Exterior', chartData.temperatura1, 'rgb(75, 192, 192)')} options={createChartOptions('Temperatura (°C)')} />
-            </div>
-            <div className="graph-box">
-                <Line data={createChartData('Temperatura Interior', chartData.temperatura2, 'rgb(255, 99, 132)')} options={createChartOptions('Temperatura (°C)')} />
-            </div>
-            <div className="graph-box">
-                <Line data={createChartData('Humedad del Suelo', chartData.humedadSuelo, 'rgb(54, 162, 235)')} options={createChartOptions('Humedad del Suelo (%)')} />
+                <Line data={chartData} />
             </div>
         </div>
     );
