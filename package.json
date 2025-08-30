@@ -1,6 +1,7 @@
 {
   "name": "frontend",
   "version": "1.0.0",
+  "homepage": "https://JuaniMunozOv.github.io/EstacionMeteorologica",
   "private": true,
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
@@ -19,6 +20,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
   },
   "browserslist": {
