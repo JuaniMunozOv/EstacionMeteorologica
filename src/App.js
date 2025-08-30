@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ref, onValue } from 'firebase/database';
+// Importamos más funciones de Firebase para poder leer el último dato
+import { getDatabase, ref, onValue, query, limitToLast } from 'firebase/database';
 import { database } from './firebase/firebaseConfig'; // Asegúrate que la ruta sea correcta
 import './App.css';
 import SensorDisplay from './components/SensorDisplay';
@@ -7,22 +8,31 @@ import SensorGraphs from './components/SensorGraphs';
 import background from './assets/background.svg';
 
 function App() {
-  // Usaremos un solo estado para todos los datos de los sensores
   const [sensorData, setSensorData] = useState(null);
 
   useEffect(() => {
-    // Escuchamos únicamente en la ruta donde el ESP32 envía los datos
-    const dataRef = ref(database, 'datos_actuales');
+    // 1. Apuntamos a la ruta 'sensores' que es la correcta
+    const dataRef = ref(database, 'sensores');
 
-    const unsubscribe = onValue(dataRef, (snapshot) => {
-      const data = snapshot.val();
-      console.log("Datos recibidos:", data);
-      setSensorData(data); // Actualizamos el estado con los datos recibidos
+    // 2. Creamos una consulta para obtener solo el último elemento
+    const lastDataQuery = query(dataRef, limitToLast(1));
+
+    const unsubscribe = onValue(lastDataQuery, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        // Como solo pedimos un dato, necesitamos extraerlo del objeto
+        const lastKey = Object.keys(data)[0];
+        const lastRecord = data[lastKey];
+
+        console.log("Último dato recibido:", lastRecord);
+        setSensorData(lastRecord);
+      } else {
+        console.log("No se encontraron datos en la ruta 'sensores'.");
+      }
     });
 
-    // Limpiamos la suscripción al desmontar el componente
     return () => unsubscribe();
-  }, []); // El array vacío asegura que esto se ejecute solo una vez
+  }, []);
 
   const backgroundStyle = {
     backgroundImage: `url(${background})`,
@@ -36,7 +46,6 @@ function App() {
   return (
     <div className="App">
       <header className="App-header" style={backgroundStyle}>
-        {/* Pasamos los mismos datos a ambos componentes */}
         <SensorDisplay data={sensorData} />
         <SensorGraphs data={sensorData} />
       </header>
