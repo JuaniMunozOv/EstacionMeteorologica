@@ -1,31 +1,40 @@
 import React, { useState, useEffect } from 'react';
-// Importamos más funciones de Firebase para poder leer el último dato
 import { getDatabase, ref, onValue, query, limitToLast } from 'firebase/database';
-import { database } from './firebase/firebaseConfig'; // Asegúrate que la ruta sea correcta
+import { database } from './firebase/firebaseConfig';
 import './App.css';
 import SensorDisplay from './components/SensorDisplay';
 import SensorGraphs from './components/SensorGraphs';
 import background from './assets/background.svg';
 
 function App() {
-  const [sensorData, setSensorData] = useState(null);
+  const [currentData, setCurrentData] = useState(null);
+  const [historicalData, setHistoricalData] = useState(null);
 
   useEffect(() => {
-    // 1. Apuntamos a la ruta 'sensores' que es la correcta
     const dataRef = ref(database, 'sensores');
+    const historicalQuery = query(dataRef, limitToLast(20));
 
-    // 2. Creamos una consulta para obtener solo el último elemento
-    const lastDataQuery = query(dataRef, limitToLast(1));
-
-    const unsubscribe = onValue(lastDataQuery, (snapshot) => {
+    const unsubscribe = onValue(historicalQuery, (snapshot) => {
       if (snapshot.exists()) {
         const data = snapshot.val();
-        // Como solo pedimos un dato, necesitamos extraerlo del objeto
-        const lastKey = Object.keys(data)[0];
+        setHistoricalData(data);
+
+        const keys = Object.keys(data);
+        const lastKey = keys[keys.length - 1];
         const lastRecord = data[lastKey];
 
-        console.log("Último dato recibido:", lastRecord);
-        setSensorData(lastRecord);
+        // --- CORRECCIÓN AQUÍ ---
+        // Ahora pasamos todos los datos necesarios con sus nombres correctos
+        const formattedData = {
+          temperatura1: lastRecord.temperatura1, // Temperatura Exterior
+          temperatura2: lastRecord.temperatura2, // Temperatura Interior
+          humedadAire: lastRecord.humedad,
+          humedadSuelo: lastRecord.humedadSuelo,
+          ultimaLectura: new Date(parseInt(lastKey)).toLocaleString()
+        };
+
+        setCurrentData(formattedData);
+
       } else {
         console.log("No se encontraron datos en la ruta 'sensores'.");
       }
@@ -46,8 +55,8 @@ function App() {
   return (
     <div className="App">
       <header className="App-header" style={backgroundStyle}>
-        <SensorDisplay data={sensorData} />
-        <SensorGraphs data={sensorData} />
+        <SensorDisplay data={currentData} />
+        <SensorGraphs data={historicalData} />
       </header>
     </div>
   );
