@@ -15,9 +15,14 @@ const SensorDisplay = ({ data }) => {
 
   return (
     <div className="card-container">
+      {/* --- CORRECCIÓN AQUÍ --- */}
       <div className="card">
-        <h2>🌡️ Temperatura</h2>
-        <p className="data">{parseFloat(data.temperatura).toFixed(1)}°C</p>
+        <h2>🌡️ Temp. Exterior</h2>
+        <p className="data">{parseFloat(data.temperatura1).toFixed(1)}°C</p>
+      </div>
+      <div className="card">
+        <h2>🏠 Temp. Interior</h2>
+        <p className="data">{parseFloat(data.temperatura2).toFixed(1)}°C</p>
       </div>
       <div className="card">
         <h2>💧 Humedad Aire</h2>
