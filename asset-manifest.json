@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/EstacionMeteorologica/static/css/main.8376f84f.css",
-    "main.js": "/EstacionMeteorologica/static/js/main.b4872ff2.js",
+    "main.js": "/EstacionMeteorologica/static/js/main.e62636c2.js",
     "static/media/background.svg": "/EstacionMeteorologica/static/media/background.f5a7d75693b8026bf1871f0d9e9a5410.svg",
     "index.html": "/EstacionMeteorologica/index.html",
     "main.8376f84f.css.map": "/EstacionMeteorologica/static/css/main.8376f84f.css.map",
-    "main.b4872ff2.js.map": "/EstacionMeteorologica/static/js/main.b4872ff2.js.map"
+    "main.e62636c2.js.map": "/EstacionMeteorologica/static/js/main.e62636c2.js.map"
   },
   "entrypoints": [
     "static/css/main.8376f84f.css",
-    "static/js/main.b4872ff2.js"
+    "static/js/main.e62636c2.js"
   ]
 }
