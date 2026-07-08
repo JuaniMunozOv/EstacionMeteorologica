@@ -1,24 +1,77 @@
-.sensor-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    /* Dos columnas en pantallas grandes */
-    grid-gap: 10px;
-    padding: 20px;
+.card-container {
+  width: min(1100px, 92vw);
+  margin: 0 auto;
+  padding: 18px 16px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
 }
 
-.sensor-box {
-    background-color: white;
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    text-align: center;
-    border-radius: 10px;
+.card {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: 16px;
+  padding: 16px 14px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
-/* Media query para pantallas pequeñas, típicamente celulares */
-@media (max-width: 600px) {
-    .sensor-grid {
-        grid-template-columns: 1fr;
-        /* Una columna en pantallas pequeñas */
-    }
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(16, 24, 39, 0.62);
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  opacity: 0.95;
+}
+
+.data {
+  margin: 0;
+  font-size: 2.05rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.timestamp-card {
+  grid-column: 1 / -1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 12px 14px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.timestamp-card p {
+  margin: 0;
+  font-size: 0.95rem;
+  opacity: 0.92;
+}
+
+.timestamp-card span {
+  font-weight: 700;
+  opacity: 1;
+}
+
+@media (max-width: 980px) {
+  .card-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .card-container {
+    grid-template-columns: 1fr;
+  }
+  .data {
+    font-size: 1.9rem;
+  }
 }

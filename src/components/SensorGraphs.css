@@ -1,42 +1,40 @@
 .sensor-graphs-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    padding: 20px;
-    align-items: center;
+    width: min(1100px, 92vw);
+    margin: 0 auto;
+    padding: 6px 16px 24px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
 }
 
 .graph-box {
-    background-color: white;
-    border: 1px solid #ccc;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    padding: 20px;
-    width: 100%;
-    /* Asegura que el gráfico ocupe todo el ancho disponible del contenedor */
-    max-height: 400px;
-    /* Limita la altura máxima de los gráficos */
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
+    border-radius: 16px;
+    padding: 14px 14px 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    overflow: hidden;
 }
 
-/* Media query para pantallas más grandes */
-@media (min-width: 768px) {
+.graph-box h3 {
+    margin: 0 0 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    opacity: 0.95;
+}
+
+.chart-wrap {
+    height: 260px;
+}
+
+@media (max-width: 980px) {
     .sensor-graphs-container {
-        flex-direction: row;
-        justify-content: space-around;
+        grid-template-columns: 1fr;
     }
-
-    .graph-box {
-        max-height: 600px;
-        max-width: 300px;
-        /* Permite una altura mayor en pantallas grandes */
-    }
-}
-
-/* Media query para pantallas pequeñas */
-@media (max-width: 767px) {
-    .graph-box {
-        max-height: 300px;
-        max-width: 200px;
-        /* Reduce la altura en pantallas pequeñas */
+    .chart-wrap {
+        height: 240px;
     }
 }
