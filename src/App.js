@@ -5,7 +5,11 @@ import './App.css';
 import SensorDisplay from './components/SensorDisplay';
 import SensorGraphs from './components/SensorGraphs';
 import background from './assets/background.svg';
-import { formatDateTimeArgentina, getLatestRecord } from './utils/sensorData';
+import {
+  formatSentDateTime,
+  getLatestRecord,
+  getRecordTimestamp,
+} from './utils/sensorData';
 
 function App() {
   const [currentData, setCurrentData] = useState(null);
@@ -36,17 +40,18 @@ function App() {
         }
 
         const { key, record } = latest;
-        const formattedData = {
+        const ts = getRecordTimestamp(key, record);
+        const sentAt = formatSentDateTime(ts);
+
+        setCurrentData({
           temperatura1: record.temperatura1,
           temperatura2: record.temperatura2,
           humedadAire: record.humedad,
           humedadSuelo: record.humedadSuelo,
-          ultimaLectura: formatDateTimeArgentina(
-            latest.ts || Number(key) || null
-          ),
-        };
-
-        setCurrentData(formattedData);
+          enviadoTs: ts,
+          fechaEnvio: sentAt?.fecha ?? null,
+          horaEnvio: sentAt?.hora ?? null,
+        });
         setConnectionState('ready');
       },
       (error) => {
