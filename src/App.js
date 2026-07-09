@@ -1,44 +1,59 @@
 import React, { useState, useEffect } from 'react';
-import { getDatabase, ref, onValue, query, limitToLast } from 'firebase/database';
+import { ref, onValue, query, limitToLast } from 'firebase/database';
 import { database } from './firebase/firebaseConfig';
 import './App.css';
 import SensorDisplay from './components/SensorDisplay';
 import SensorGraphs from './components/SensorGraphs';
 import background from './assets/background.svg';
+import { formatDateTimeArgentina, getLatestRecord } from './utils/sensorData';
 
 function App() {
   const [currentData, setCurrentData] = useState(null);
   const [historicalData, setHistoricalData] = useState(null);
+  const [connectionState, setConnectionState] = useState('loading');
 
   useEffect(() => {
     const dataRef = ref(database, 'sensores');
     const historicalQuery = query(dataRef, limitToLast(20));
 
-    const unsubscribe = onValue(historicalQuery, (snapshot) => {
-      if (snapshot.exists()) {
+    const unsubscribe = onValue(
+      historicalQuery,
+      (snapshot) => {
+        if (!snapshot.exists()) {
+          setCurrentData(null);
+          setHistoricalData(null);
+          setConnectionState('empty');
+          return;
+        }
+
         const data = snapshot.val();
         setHistoricalData(data);
 
-        const keys = Object.keys(data);
-        const lastKey = keys[keys.length - 1];
-        const lastRecord = data[lastKey];
+        const latest = getLatestRecord(data);
+        if (!latest) {
+          setConnectionState('empty');
+          return;
+        }
 
-        // --- CORRECCIÓN AQUÍ ---
-        // Ahora pasamos todos los datos necesarios con sus nombres correctos
+        const { key, record } = latest;
         const formattedData = {
-          temperatura1: lastRecord.temperatura1, // Temperatura Exterior
-          temperatura2: lastRecord.temperatura2, // Temperatura Interior
-          humedadAire: lastRecord.humedad,
-          humedadSuelo: lastRecord.humedadSuelo,
-          ultimaLectura: new Date(parseInt(lastKey)).toLocaleString()
+          temperatura1: record.temperatura1,
+          temperatura2: record.temperatura2,
+          humedadAire: record.humedad,
+          humedadSuelo: record.humedadSuelo,
+          ultimaLectura: formatDateTimeArgentina(
+            latest.ts || Number(key) || null
+          ),
         };
 
         setCurrentData(formattedData);
-
-      } else {
-        console.log("No se encontraron datos en la ruta 'sensores'.");
+        setConnectionState('ready');
+      },
+      (error) => {
+        console.error('Error leyendo Firebase:', error);
+        setConnectionState('error');
       }
-    });
+    );
 
     return () => unsubscribe();
   }, []);
@@ -49,14 +64,14 @@ function App() {
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
     minHeight: '100vh',
-    width: '100%'
+    width: '100%',
   };
 
   return (
     <div className="App">
       <header className="App-header" style={backgroundStyle}>
-        <SensorDisplay data={currentData} />
-        <SensorGraphs data={historicalData} />
+        <SensorDisplay data={currentData} connectionState={connectionState} />
+        <SensorGraphs data={historicalData} connectionState={connectionState} />
       </header>
     </div>
   );

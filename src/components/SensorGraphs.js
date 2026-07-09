@@ -2,21 +2,27 @@ import React from 'react';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line } from 'react-chartjs-2';
 import './SensorGraphs.css';
+import { formatDateTimeArgentina, sortRecordsByTime } from '../utils/sensorData';
 
-// Registramos los componentes de Chart.js
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const SensorGraphs = ({ data }) => {
-    // Si los datos aún no han llegado, muestra un mensaje de carga
+const SensorGraphs = ({ data, connectionState = 'loading' }) => {
     if (!data) {
-        return <div style={{ color: 'white', opacity: 0.9, padding: 16 }}>Cargando gráficos...</div>;
+        const message = connectionState === 'error'
+            ? 'Error al cargar gráficos'
+            : connectionState === 'empty'
+                ? 'Sin datos históricos'
+                : 'Cargando gráficos...';
+        return <div style={{ color: 'white', opacity: 0.9, padding: 16 }}>{message}</div>;
     }
 
-    // Procesamos los datos históricos para crear las etiquetas y los valores de los gráficos
-    const labels = Object.keys(data).map(key => new Date(parseInt(key)).toLocaleTimeString());
-    const temperatura1Data = Object.values(data).map(record => record.temperatura1);
-    const temperatura2Data = Object.values(data).map(record => record.temperatura2);
-    const humedadSueloData = Object.values(data).map(record => record.humedadSuelo);
+    const sorted = sortRecordsByTime(data);
+    const labels = sorted.map(({ key, ts }) =>
+        ts ? formatDateTimeArgentina(ts).split(' ').slice(-1)[0] : key
+    );
+    const temperatura1Data = sorted.map(({ record }) => record.temperatura1);
+    const temperatura2Data = sorted.map(({ record }) => record.temperatura2);
+    const humedadSueloData = sorted.map(({ record }) => record.humedadSuelo);
 
     const commonOptions = {
         responsive: true,
@@ -32,6 +38,11 @@ const SensorGraphs = ({ data }) => {
             tooltip: {
                 enabled: true,
                 callbacks: {
+                    title: (items) => {
+                        const idx = items[0]?.dataIndex;
+                        const entry = sorted[idx];
+                        return entry?.ts ? formatDateTimeArgentina(entry.ts) : entry?.key;
+                    },
                     label: (ctx) => {
                         const v = ctx.parsed?.y;
                         return `${ctx.dataset.label}: ${typeof v === 'number' ? v.toFixed(1) : v}`;
@@ -51,7 +62,6 @@ const SensorGraphs = ({ data }) => {
         }
     };
 
-    // Creamos la configuración para cada uno de los tres gráficos
     const temp1ChartData = {
         labels,
         datasets: [{

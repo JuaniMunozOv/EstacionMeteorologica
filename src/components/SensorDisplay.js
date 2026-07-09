@@ -1,12 +1,19 @@
 import React from 'react';
 import './SensorDisplay.css';
 
-const SensorDisplay = ({ data }) => {
+const statusMessage = {
+  loading: 'Conectando con Firebase...',
+  empty: 'Sin lecturas en Firebase (ruta sensores/)',
+  error: 'No se pudo leer Firebase. Revisá reglas y conexión.',
+  ready: null,
+};
+
+const SensorDisplay = ({ data, connectionState = 'loading' }) => {
   if (!data) {
     return (
       <div className="card-container">
-        <div className="card">
-          <h2>Conectando...</h2>
+        <div className="card status-card">
+          <h2>{statusMessage[connectionState] || 'Conectando...'}</h2>
           <p className="data">--</p>
         </div>
       </div>
@@ -15,7 +22,6 @@ const SensorDisplay = ({ data }) => {
 
   return (
     <div className="card-container">
-      {/* --- CORRECCIÓN AQUÍ --- */}
       <div className="card">
         <h2>🌡️ Temp. Exterior</h2>
         <p className="data">{parseFloat(data.temperatura1).toFixed(1)}°C</p>
