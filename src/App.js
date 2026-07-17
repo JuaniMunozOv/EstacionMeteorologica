@@ -47,7 +47,6 @@ function App() {
           temperatura1: record.temperatura1,
           temperatura2: record.temperatura2,
           humedadAire: record.humedad,
-          humedadSuelo: record.humedadSuelo,
           enviadoTs: ts,
           fechaEnvio: sentAt?.fecha ?? null,
           horaEnvio: sentAt?.hora ?? null,

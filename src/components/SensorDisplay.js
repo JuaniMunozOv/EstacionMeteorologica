@@ -67,10 +67,6 @@ const SensorDisplay = ({ data, connectionState = 'loading' }) => {
         <h2>Humedad Aire</h2>
         <p className="data">{parseFloat(data.humedadAire).toFixed(1)} %</p>
       </div>
-      <div className="card">
-        <h2>Humedad Suelo</h2>
-        <p className="data">{data.humedadSuelo} %</p>
-      </div>
     </div>
   );
 };

@@ -22,7 +22,7 @@ const SensorGraphs = ({ data, connectionState = 'loading' }) => {
     );
     const temperatura1Data = sorted.map(({ record }) => record.temperatura1);
     const temperatura2Data = sorted.map(({ record }) => record.temperatura2);
-    const humedadSueloData = sorted.map(({ record }) => record.humedadSuelo);
+    const humedadAireData = sorted.map(({ record }) => record.humedad);
 
     const commonOptions = {
         responsive: true,
@@ -86,11 +86,11 @@ const SensorGraphs = ({ data, connectionState = 'loading' }) => {
         }],
     };
 
-    const humedadSueloChartData = {
+    const humedadAireChartData = {
         labels,
         datasets: [{
-            label: 'Humedad Suelo (%)',
-            data: humedadSueloData,
+            label: 'Humedad aire (%)',
+            data: humedadAireData,
             borderColor: 'rgba(75, 192, 192, 0.95)',
             backgroundColor: 'rgba(75, 192, 192, 0.15)',
             tension: 0.25,
@@ -113,9 +113,9 @@ const SensorGraphs = ({ data, connectionState = 'loading' }) => {
                 </div>
             </div>
             <div className="graph-box">
-                <h3>Humedad del Suelo</h3>
+                <h3>Humedad del aire</h3>
                 <div className="chart-wrap">
-                    <Line data={humedadSueloChartData} options={commonOptions} />
+                    <Line data={humedadAireChartData} options={commonOptions} />
                 </div>
             </div>
         </div>
