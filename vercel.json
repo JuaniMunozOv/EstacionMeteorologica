@@ -1,22 +1,17 @@
 {
-  "buildCommand": "PUBLIC_URL=/laboratorio npm run build",
+  "buildCommand": "PUBLIC_URL=/ npm run build",
   "outputDirectory": "build",
   "installCommand": "npm ci",
   "redirects": [
     {
-      "source": "/",
-      "destination": "/laboratorio",
-      "permanent": false
-    }
-  ],
-  "rewrites": [
-    {
       "source": "/laboratorio",
-      "destination": "/index.html"
+      "destination": "/",
+      "permanent": true
     },
     {
-      "source": "/laboratorio/(.*)",
-      "destination": "/$1"
+      "source": "/laboratorio/:path*",
+      "destination": "/:path*",
+      "permanent": true
     }
   ]
 }

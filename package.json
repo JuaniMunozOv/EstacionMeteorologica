@@ -1,7 +1,7 @@
 {
   "name": "frontend",
   "version": "1.0.0",
-  "homepage": "/laboratorio",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
@@ -18,7 +18,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build:vercel": "PUBLIC_URL=/laboratorio react-scripts build",
+    "build:vercel": "PUBLIC_URL=/ react-scripts build",
     "build:gh-pages": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
