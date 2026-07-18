@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { ref, onValue, query, limitToLast } from 'firebase/database';
 import { database } from './firebase/firebaseConfig';
 import './App.css';
 import SensorDisplay from './components/SensorDisplay';
 import SensorGraphs from './components/SensorGraphs';
+import DailyTempExtremes from './components/DailyTempExtremes';
 import background from './assets/background.svg';
 import {
+  computeDailyTempExtremes,
+  filterRecordsLastHours,
   formatSentDateTime,
   getLatestRecord,
   getRecordTimestamp,
 } from './utils/sensorData';
+
+// ~5 min por lectura → ~288/día. 2500 ≈ 8–9 días de historial.
+const HISTORY_LIMIT = 2500;
 
 function App() {
   const [currentData, setCurrentData] = useState(null);
@@ -18,7 +24,7 @@ function App() {
 
   useEffect(() => {
     const dataRef = ref(database, 'sensores');
-    const historicalQuery = query(dataRef, limitToLast(20));
+    const historicalQuery = query(dataRef, limitToLast(HISTORY_LIMIT));
 
     const unsubscribe = onValue(
       historicalQuery,
@@ -39,8 +45,8 @@ function App() {
           return;
         }
 
-        const { key, record } = latest;
-        const ts = getRecordTimestamp(key, record);
+        const { record } = latest;
+        const ts = getRecordTimestamp(latest.key, record);
         const sentAt = formatSentDateTime(ts);
 
         setCurrentData({
@@ -62,6 +68,16 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  const dailyExtremes = useMemo(
+    () => computeDailyTempExtremes(historicalData),
+    [historicalData]
+  );
+
+  const graphData = useMemo(
+    () => filterRecordsLastHours(historicalData, 24),
+    [historicalData]
+  );
+
   const backgroundStyle = {
     backgroundImage: `url(${background})`,
     backgroundSize: 'cover',
@@ -75,7 +91,8 @@ function App() {
     <div className="App">
       <header className="App-header" style={backgroundStyle}>
         <SensorDisplay data={currentData} connectionState={connectionState} />
-        <SensorGraphs data={historicalData} connectionState={connectionState} />
+        <DailyTempExtremes days={dailyExtremes} connectionState={connectionState} />
+        <SensorGraphs data={graphData} connectionState={connectionState} />
       </header>
     </div>
   );

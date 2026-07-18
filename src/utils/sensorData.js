@@ -89,3 +89,100 @@ export function sortRecordsByTime(data) {
     }))
     .sort((a, b) => a.ts - b.ts || a.key.localeCompare(b.key));
 }
+
+/** Día calendario en Argentina: YYYY-MM-DD */
+export function getDayKeyArgentina(ms) {
+  if (!ms) return null;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Argentina/Buenos_Aires',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date(ms));
+}
+
+export function parseValidTemp(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  if (n <= -126 || n > 85) return null;
+  return n;
+}
+
+function findExtremes(points) {
+  if (!points.length) return null;
+  let max = points[0];
+  let min = points[0];
+  for (let i = 1; i < points.length; i++) {
+    const p = points[i];
+    if (p.value > max.value) max = p;
+    if (p.value < min.value) min = p;
+  }
+  return {
+    max: { value: max.value, ts: max.ts },
+    min: { value: min.value, ts: min.ts },
+    samples: points.length,
+  };
+}
+
+/**
+ * Máx/mín por día (Argentina) para exterior e interior.
+ * Devuelve días ordenados del más reciente al más antiguo.
+ */
+export function computeDailyTempExtremes(data) {
+  const byDay = new Map();
+
+  for (const [key, record] of Object.entries(data || {})) {
+    const ts = getRecordTimestamp(key, record);
+    if (!ts) continue;
+
+    const dayKey = getDayKeyArgentina(ts);
+    if (!dayKey) continue;
+
+    if (!byDay.has(dayKey)) {
+      byDay.set(dayKey, { exterior: [], interior: [] });
+    }
+    const bucket = byDay.get(dayKey);
+
+    const t1 = parseValidTemp(record.temperatura1);
+    const t2 = parseValidTemp(record.temperatura2);
+    if (t1 != null) bucket.exterior.push({ value: t1, ts });
+    if (t2 != null) bucket.interior.push({ value: t2, ts });
+  }
+
+  const todayKey = getDayKeyArgentina(Date.now());
+
+  return [...byDay.entries()]
+    .map(([dayKey, bucket]) => {
+      const labelDate = new Date(`${dayKey}T12:00:00`);
+      const fechaLarga = labelDate.toLocaleDateString('es-AR', {
+        timeZone: 'America/Argentina/Buenos_Aires',
+        weekday: 'long',
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+      });
+      const fechaCorta = dayKey.split('-').reverse().join('/');
+
+      return {
+        dayKey,
+        fechaCorta,
+        fechaLarga,
+        isToday: dayKey === todayKey,
+        exterior: findExtremes(bucket.exterior),
+        interior: findExtremes(bucket.interior),
+      };
+    })
+    .sort((a, b) => b.dayKey.localeCompare(a.dayKey));
+}
+
+/** Filtra registros de las últimas `hours` horas (para gráficos). */
+export function filterRecordsLastHours(data, hours = 24) {
+  if (!data) return null;
+  const cutoff = Date.now() - hours * 60 * 60 * 1000;
+  const filtered = {};
+  for (const [key, record] of Object.entries(data)) {
+    const ts = getRecordTimestamp(key, record);
+    if (ts && ts >= cutoff) filtered[key] = record;
+  }
+  return Object.keys(filtered).length ? filtered : null;
+}

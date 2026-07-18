@@ -19,11 +19,17 @@
 }
 
 .graph-box h3 {
-    margin: 0 0 10px;
+    margin: 0 0 4px;
     font-size: 1rem;
     font-weight: 700;
     letter-spacing: 0.2px;
     opacity: 0.95;
+}
+
+.graph-hint {
+    margin: 0 0 10px;
+    font-size: 0.78rem;
+    opacity: 0.65;
 }
 
 .chart-wrap {

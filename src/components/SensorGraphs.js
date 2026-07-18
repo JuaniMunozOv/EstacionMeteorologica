@@ -102,18 +102,21 @@ const SensorGraphs = ({ data, connectionState = 'loading' }) => {
         <div className="sensor-graphs-container">
             <div className="graph-box">
                 <h3>Temperatura exterior</h3>
+                <p className="graph-hint">Ultimas 24 horas</p>
                 <div className="chart-wrap">
                     <Line data={temp1ChartData} options={commonOptions} />
                 </div>
             </div>
             <div className="graph-box">
                 <h3>Temperatura interior</h3>
+                <p className="graph-hint">Ultimas 24 horas</p>
                 <div className="chart-wrap">
                     <Line data={temp2ChartData} options={commonOptions} />
                 </div>
             </div>
             <div className="graph-box">
                 <h3>Humedad del aire</h3>
+                <p className="graph-hint">Ultimas 24 horas</p>
                 <div className="chart-wrap">
                     <Line data={humedadAireChartData} options={commonOptions} />
                 </div>
