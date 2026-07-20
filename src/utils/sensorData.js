@@ -175,6 +175,18 @@ export function computeDailyTempExtremes(data) {
     .sort((a, b) => b.dayKey.localeCompare(a.dayKey));
 }
 
+/** Filtra registros de un día calendario Argentina (00:00–23:59). */
+export function filterRecordsForCalendarDay(data, dayKey) {
+  if (!data || !dayKey) return null;
+  const filtered = {};
+  for (const [key, record] of Object.entries(data)) {
+    const ts = getRecordTimestamp(key, record);
+    if (!ts) continue;
+    if (getDayKeyArgentina(ts) === dayKey) filtered[key] = record;
+  }
+  return Object.keys(filtered).length ? filtered : null;
+}
+
 /** Filtra registros de las últimas `hours` horas (para gráficos). */
 export function filterRecordsLastHours(data, hours = 24) {
   if (!data) return null;

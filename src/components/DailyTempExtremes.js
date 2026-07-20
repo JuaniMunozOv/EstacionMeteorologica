@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import './DailyTempExtremes.css';
 import { formatSentDateTime } from '../utils/sensorData';
 
@@ -52,16 +52,23 @@ function ThermoCard({ title, accent, extremes }) {
   );
 }
 
-const DailyTempExtremes = ({ days, connectionState = 'loading' }) => {
-  const [selectedKey, setSelectedKey] = useState(null);
-
+const DailyTempExtremes = ({
+  days,
+  connectionState = 'loading',
+  selectedDayKey = null,
+  onSelectDay,
+}) => {
   const selected = useMemo(() => {
     if (!days?.length) return null;
-    if (selectedKey) {
-      return days.find((d) => d.dayKey === selectedKey) || days[0];
+    if (selectedDayKey) {
+      return days.find((d) => d.dayKey === selectedDayKey) || days[0];
     }
     return days.find((d) => d.isToday) || days[0];
-  }, [days, selectedKey]);
+  }, [days, selectedDayKey]);
+
+  const selectDay = (dayKey) => {
+    if (typeof onSelectDay === 'function') onSelectDay(dayKey);
+  };
 
   if (!days?.length) {
     const message =
@@ -103,7 +110,7 @@ const DailyTempExtremes = ({ days, connectionState = 'loading' }) => {
                 role="tab"
                 aria-selected={active}
                 className={`day-chip${active ? ' active' : ''}${day.isToday ? ' today' : ''}`}
-                onClick={() => setSelectedKey(day.dayKey)}
+                onClick={() => selectDay(day.dayKey)}
               >
                 <span className="day-chip-label">
                   {day.isToday ? 'Hoy' : day.fechaCorta}

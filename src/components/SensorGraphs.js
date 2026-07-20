@@ -6,13 +6,15 @@ import { formatDateTimeArgentina, sortRecordsByTime } from '../utils/sensorData'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const SensorGraphs = ({ data, connectionState = 'loading' }) => {
+const SensorGraphs = ({ data, connectionState = 'loading', dayLabel = 'Hoy · 00:00–23:59' }) => {
     if (!data) {
         const message = connectionState === 'error'
             ? 'Error al cargar gráficos'
             : connectionState === 'empty'
                 ? 'Sin datos históricos'
-                : 'Cargando gráficos...';
+                : connectionState === 'ready'
+                    ? 'Sin lecturas para este día (00:00–23:59)'
+                    : 'Cargando gráficos...';
         return <div style={{ color: 'white', opacity: 0.9, padding: 16 }}>{message}</div>;
     }
 
@@ -102,21 +104,21 @@ const SensorGraphs = ({ data, connectionState = 'loading' }) => {
         <div className="sensor-graphs-container">
             <div className="graph-box">
                 <h3>Temperatura exterior</h3>
-                <p className="graph-hint">Ultimas 24 horas</p>
+                <p className="graph-hint">{dayLabel}</p>
                 <div className="chart-wrap">
                     <Line data={temp1ChartData} options={commonOptions} />
                 </div>
             </div>
             <div className="graph-box">
                 <h3>Temperatura interior</h3>
-                <p className="graph-hint">Ultimas 24 horas</p>
+                <p className="graph-hint">{dayLabel}</p>
                 <div className="chart-wrap">
                     <Line data={temp2ChartData} options={commonOptions} />
                 </div>
             </div>
             <div className="graph-box">
                 <h3>Humedad del aire</h3>
-                <p className="graph-hint">Ultimas 24 horas</p>
+                <p className="graph-hint">{dayLabel}</p>
                 <div className="chart-wrap">
                     <Line data={humedadAireChartData} options={commonOptions} />
                 </div>

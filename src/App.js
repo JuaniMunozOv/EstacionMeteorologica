@@ -8,8 +8,9 @@ import DailyTempExtremes from './components/DailyTempExtremes';
 import background from './assets/background.svg';
 import {
   computeDailyTempExtremes,
-  filterRecordsLastHours,
+  filterRecordsForCalendarDay,
   formatSentDateTime,
+  getDayKeyArgentina,
   getLatestRecord,
   getRecordTimestamp,
 } from './utils/sensorData';
@@ -21,6 +22,7 @@ function App() {
   const [currentData, setCurrentData] = useState(null);
   const [historicalData, setHistoricalData] = useState(null);
   const [connectionState, setConnectionState] = useState('loading');
+  const [selectedDayKey, setSelectedDayKey] = useState(null);
 
   useEffect(() => {
     const dataRef = ref(database, 'sensores');
@@ -73,10 +75,24 @@ function App() {
     [historicalData]
   );
 
+  const activeDayKey = useMemo(() => {
+    if (selectedDayKey) return selectedDayKey;
+    const today = getDayKeyArgentina(Date.now());
+    if (dailyExtremes.some((d) => d.dayKey === today)) return today;
+    return dailyExtremes[0]?.dayKey ?? today;
+  }, [selectedDayKey, dailyExtremes]);
+
   const graphData = useMemo(
-    () => filterRecordsLastHours(historicalData, 24),
-    [historicalData]
+    () => filterRecordsForCalendarDay(historicalData, activeDayKey),
+    [historicalData, activeDayKey]
   );
+
+  const graphDayLabel = useMemo(() => {
+    const day = dailyExtremes.find((d) => d.dayKey === activeDayKey);
+    if (!day) return 'Día · 00:00–23:59';
+    if (day.isToday) return `Hoy · 00:00–23:59 (${day.fechaCorta})`;
+    return `${day.fechaCorta} · 00:00–23:59`;
+  }, [dailyExtremes, activeDayKey]);
 
   const backgroundStyle = {
     backgroundImage: `url(${background})`,
@@ -91,8 +107,17 @@ function App() {
     <div className="App">
       <header className="App-header" style={backgroundStyle}>
         <SensorDisplay data={currentData} connectionState={connectionState} />
-        <DailyTempExtremes days={dailyExtremes} connectionState={connectionState} />
-        <SensorGraphs data={graphData} connectionState={connectionState} />
+        <DailyTempExtremes
+          days={dailyExtremes}
+          connectionState={connectionState}
+          selectedDayKey={activeDayKey}
+          onSelectDay={setSelectedDayKey}
+        />
+        <SensorGraphs
+          data={graphData}
+          connectionState={connectionState}
+          dayLabel={graphDayLabel}
+        />
       </header>
     </div>
   );
