@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import './DailyTempExtremes.css';
 import { formatSentDateTime } from '../utils/sensorData';
 
@@ -46,37 +46,20 @@ function ThermoCard({ title, accent, extremes }) {
         <ExtremeBlock kind="min" extreme={extremes?.min} />
       </div>
       {extremes?.samples ? (
-        <p className="extreme-samples">{extremes.samples} lecturas del día</p>
+        <p className="extreme-samples">{extremes.samples} lecturas de hoy</p>
       ) : null}
     </div>
   );
 }
 
-const DailyTempExtremes = ({
-  days,
-  connectionState = 'loading',
-  selectedDayKey = null,
-  onSelectDay,
-}) => {
-  const selected = useMemo(() => {
-    if (!days?.length) return null;
-    if (selectedDayKey) {
-      return days.find((d) => d.dayKey === selectedDayKey) || days[0];
-    }
-    return days.find((d) => d.isToday) || days[0];
-  }, [days, selectedDayKey]);
-
-  const selectDay = (dayKey) => {
-    if (typeof onSelectDay === 'function') onSelectDay(dayKey);
-  };
-
-  if (!days?.length) {
+const DailyTempExtremes = ({ today, connectionState = 'loading' }) => {
+  if (!today) {
     const message =
       connectionState === 'error'
         ? 'No se pudieron calcular extremos'
         : connectionState === 'empty'
-          ? 'Aún no hay historial por día'
-          : 'Calculando máximos y mínimos...';
+          ? 'Aún no hay lecturas de hoy'
+          : 'Calculando máximos y mínimos de hoy...';
     return (
       <section className="daily-extremes">
         <div className="daily-extremes-inner daily-extremes-status">
@@ -91,58 +74,30 @@ const DailyTempExtremes = ({
       <div className="daily-extremes-inner">
         <header className="daily-extremes-header">
           <div>
-            <p className="daily-kicker">Historial diario</p>
-            <h3>Máximas y mínimas por día</h3>
+            <p className="daily-kicker">Hoy · se actualiza con cada envío</p>
+            <h3>Máximas y mínimas del día</h3>
             <p className="daily-sub">
-              Cada valor muestra la temperatura y la hora exacta en que se registró
-              (hora Argentina).
+              Temperatura y hora exacta de cada extremo (Argentina).
+              Se recalcula cada ~5 min cuando llega un dato nuevo del ESP32.
             </p>
           </div>
         </header>
 
-        <div className="day-chips" role="tablist" aria-label="Elegir día">
-          {days.map((day) => {
-            const active = selected?.dayKey === day.dayKey;
-            return (
-              <button
-                key={day.dayKey}
-                type="button"
-                role="tab"
-                aria-selected={active}
-                className={`day-chip${active ? ' active' : ''}${day.isToday ? ' today' : ''}`}
-                onClick={() => selectDay(day.dayKey)}
-              >
-                <span className="day-chip-label">
-                  {day.isToday ? 'Hoy' : day.fechaCorta}
-                </span>
-                {day.isToday ? (
-                  <span className="day-chip-sub">{day.fechaCorta}</span>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-
-        {selected ? (
-          <div className="day-panel">
-            <p className="day-panel-title">
-              {selected.isToday ? 'Hoy · ' : ''}
-              {selected.fechaLarga}
-            </p>
-            <div className="thermo-grid">
-              <ThermoCard
-                title="Termómetro exterior"
-                accent="exterior"
-                extremes={selected.exterior}
-              />
-              <ThermoCard
-                title="Termómetro interior"
-                accent="interior"
-                extremes={selected.interior}
-              />
-            </div>
+        <div className="day-panel">
+          <p className="day-panel-title">Hoy · {today.fechaLarga}</p>
+          <div className="thermo-grid">
+            <ThermoCard
+              title="Termómetro exterior"
+              accent="exterior"
+              extremes={today.exterior}
+            />
+            <ThermoCard
+              title="Termómetro interior"
+              accent="interior"
+              extremes={today.interior}
+            />
           </div>
-        ) : null}
+        </div>
       </div>
     </section>
   );

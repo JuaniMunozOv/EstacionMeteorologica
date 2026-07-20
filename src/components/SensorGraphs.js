@@ -6,7 +6,34 @@ import { formatDateTimeArgentina, sortRecordsByTime } from '../utils/sensorData'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const SensorGraphs = ({ data, connectionState = 'loading', dayLabel = 'Hoy · 00:00–23:59' }) => {
+const SensorGraphs = ({
+    data,
+    connectionState = 'loading',
+    dayLabel = 'Hoy · 00:00–23:59',
+    days = [],
+    selectedDayKey,
+    onSelectDay,
+}) => {
+    const dayChips = days?.length ? (
+        <div className="graph-day-chips" role="tablist" aria-label="Elegir día del gráfico">
+            {days.map((day) => {
+                const active = selectedDayKey === day.dayKey;
+                return (
+                    <button
+                        key={day.dayKey}
+                        type="button"
+                        role="tab"
+                        aria-selected={active}
+                        className={`graph-day-chip${active ? ' active' : ''}${day.isToday ? ' today' : ''}`}
+                        onClick={() => onSelectDay?.(day.dayKey)}
+                    >
+                        {day.isToday ? 'Hoy' : day.fechaCorta}
+                    </button>
+                );
+            })}
+        </div>
+    ) : null;
+
     if (!data) {
         const message = connectionState === 'error'
             ? 'Error al cargar gráficos'
@@ -15,7 +42,12 @@ const SensorGraphs = ({ data, connectionState = 'loading', dayLabel = 'Hoy · 00
                 : connectionState === 'ready'
                     ? 'Sin lecturas para este día (00:00–23:59)'
                     : 'Cargando gráficos...';
-        return <div style={{ color: 'white', opacity: 0.9, padding: 16 }}>{message}</div>;
+        return (
+            <div className="sensor-graphs-section">
+                {dayChips}
+                <div style={{ color: 'white', opacity: 0.9, padding: 16 }}>{message}</div>
+            </div>
+        );
     }
 
     const sorted = sortRecordsByTime(data);
@@ -101,7 +133,9 @@ const SensorGraphs = ({ data, connectionState = 'loading', dayLabel = 'Hoy · 00
     };
 
     return (
-        <div className="sensor-graphs-container">
+        <div className="sensor-graphs-section">
+            {dayChips}
+            <div className="sensor-graphs-container">
             <div className="graph-box">
                 <h3>Temperatura exterior</h3>
                 <p className="graph-hint">{dayLabel}</p>
@@ -122,6 +156,7 @@ const SensorGraphs = ({ data, connectionState = 'loading', dayLabel = 'Hoy · 00
                 <div className="chart-wrap">
                     <Line data={humedadAireChartData} options={commonOptions} />
                 </div>
+            </div>
             </div>
         </div>
     );

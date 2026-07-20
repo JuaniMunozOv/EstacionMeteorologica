@@ -22,7 +22,7 @@ function App() {
   const [currentData, setCurrentData] = useState(null);
   const [historicalData, setHistoricalData] = useState(null);
   const [connectionState, setConnectionState] = useState('loading');
-  const [selectedDayKey, setSelectedDayKey] = useState(null);
+  const [selectedGraphDayKey, setSelectedGraphDayKey] = useState(null);
 
   useEffect(() => {
     const dataRef = ref(database, 'sensores');
@@ -75,24 +75,30 @@ function App() {
     [historicalData]
   );
 
-  const activeDayKey = useMemo(() => {
-    if (selectedDayKey) return selectedDayKey;
-    const today = getDayKeyArgentina(Date.now());
-    if (dailyExtremes.some((d) => d.dayKey === today)) return today;
-    return dailyExtremes[0]?.dayKey ?? today;
-  }, [selectedDayKey, dailyExtremes]);
+  const todayDayKey = getDayKeyArgentina(Date.now());
+
+  const todayExtremes = useMemo(
+    () => dailyExtremes.find((d) => d.dayKey === todayDayKey) ?? dailyExtremes[0] ?? null,
+    [dailyExtremes, todayDayKey]
+  );
+
+  const graphDayKey = useMemo(() => {
+    if (selectedGraphDayKey) return selectedGraphDayKey;
+    if (dailyExtremes.some((d) => d.dayKey === todayDayKey)) return todayDayKey;
+    return dailyExtremes[0]?.dayKey ?? todayDayKey;
+  }, [selectedGraphDayKey, dailyExtremes, todayDayKey]);
 
   const graphData = useMemo(
-    () => filterRecordsForCalendarDay(historicalData, activeDayKey),
-    [historicalData, activeDayKey]
+    () => filterRecordsForCalendarDay(historicalData, graphDayKey),
+    [historicalData, graphDayKey]
   );
 
   const graphDayLabel = useMemo(() => {
-    const day = dailyExtremes.find((d) => d.dayKey === activeDayKey);
+    const day = dailyExtremes.find((d) => d.dayKey === graphDayKey);
     if (!day) return 'Día · 00:00–23:59';
     if (day.isToday) return `Hoy · 00:00–23:59 (${day.fechaCorta})`;
     return `${day.fechaCorta} · 00:00–23:59`;
-  }, [dailyExtremes, activeDayKey]);
+  }, [dailyExtremes, graphDayKey]);
 
   const backgroundStyle = {
     backgroundImage: `url(${background})`,
@@ -108,15 +114,16 @@ function App() {
       <header className="App-header" style={backgroundStyle}>
         <SensorDisplay data={currentData} connectionState={connectionState} />
         <DailyTempExtremes
-          days={dailyExtremes}
+          today={todayExtremes}
           connectionState={connectionState}
-          selectedDayKey={activeDayKey}
-          onSelectDay={setSelectedDayKey}
         />
         <SensorGraphs
           data={graphData}
           connectionState={connectionState}
           dayLabel={graphDayLabel}
+          days={dailyExtremes}
+          selectedDayKey={graphDayKey}
+          onSelectDay={setSelectedGraphDayKey}
         />
       </header>
     </div>
