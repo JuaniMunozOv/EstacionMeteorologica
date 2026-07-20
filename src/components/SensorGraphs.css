@@ -1,5 +1,35 @@
-.sensor-graphs-container {
+.sensor-graphs-section {
     width: min(1100px, 92vw);
+    margin: 0 auto;
+}
+
+.graph-day-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 0 16px 12px;
+    scrollbar-width: thin;
+}
+
+.graph-day-chip {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: inherit;
+    cursor: pointer;
+    font-size: 0.88rem;
+    font-weight: 650;
+}
+
+.graph-day-chip.active {
+    border-color: rgba(129, 230, 217, 0.65);
+    background: rgba(56, 178, 172, 0.28);
+}
+
+.sensor-graphs-container {
+    width: 100%;
     margin: 0 auto;
     padding: 6px 16px 24px;
     display: grid;
